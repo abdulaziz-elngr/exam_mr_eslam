@@ -21,8 +21,8 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
   }
 
   const rows = await db()`
-    select id, student_name, student_phone, score, total, submitted_at, started_at, tab_switches
-    from attempts order by coalesce(submitted_at, started_at) desc`;
+    select id, student_name, student_code, score, total, submitted_at, started_at, tab_switches, tamper
+    from online_exam.results order by coalesce(submitted_at, started_at) desc`;
   const done = rows.filter((r) => r.submitted_at && r.total);
   const avg = done.length ? Math.round(done.reduce((s, r) => s + (r.score / r.total) * 100, 0) / done.length) : 0;
 
@@ -41,19 +41,20 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       </div>
       <div className="card" style={{ overflow: "auto" }}>
         <table>
-          <thead><tr><th>Student</th><th>Phone</th><th>Score</th><th>%</th><th>Submitted</th><th>Tab switches</th><th /></tr></thead>
+          <thead><tr><th>Student</th><th>Code</th><th>Score</th><th>%</th><th>Submitted</th><th>Tab switches</th><th>Tamper</th><th /></tr></thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id}>
-                <td>{r.student_name}</td><td>{r.student_phone}</td>
+                <td>{r.student_name}</td><td>{r.student_code}</td>
                 <td>{r.submitted_at ? `${r.score}/${r.total}` : "In progress"}</td>
                 <td>{r.submitted_at && r.total ? Math.round((r.score / r.total) * 100) + "%" : "—"}</td>
                 <td>{r.submitted_at ? new Date(r.submitted_at).toLocaleString("en-GB", { timeZone: "Africa/Cairo" }) : "—"}</td>
                 <td className={r.tab_switches > 2 ? "warn" : ""}>{r.tab_switches}</td>
+                <td className={r.tamper > 0 ? "warn" : ""}>{r.tamper}</td>
                 <td><Link href={`/admin/attempt/${r.id}`}>View</Link></td>
               </tr>
             ))}
-            {!rows.length && <tr><td colSpan={7} style={{ textAlign: "center", color: "#6b7a90" }}>No attempts yet.</td></tr>}
+            {!rows.length && <tr><td colSpan={8} style={{ textAlign: "center", color: "#6b7a90" }}>No attempts yet.</td></tr>}
           </tbody>
         </table>
       </div>

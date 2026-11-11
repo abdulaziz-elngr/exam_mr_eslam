@@ -10,16 +10,16 @@ export default async function Attempt({ params }: { params: Promise<{ id: string
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const sql = db();
-  const [a] = await sql`select * from attempts where id = ${id}`;
+  const [a] = await sql`select * from online_exam.results where id = ${id}`;
   if (!a) notFound();
-  const qs = await sql`select id, position, type, prompt, options, correct from questions where exam_id = ${a.exam_id} order by position`;
+  const qs = await sql`select id, position, type, prompt, options, correct from online_exam.questions where exam_id = ${a.exam_id} order by position`;
   const ans = (a.answers ?? {}) as Record<string, number | string>;
 
   return (
     <div className="wrap">
       <Link href="/admin">← Back</Link>
       <h1 style={{ textAlign: "left", marginTop: 10 }}>{a.student_name}</h1>
-      <p className="sub" style={{ textAlign: "left" }}>{a.student_phone} · Score {a.score ?? "—"}/{a.total ?? "—"} · Tab switches {a.tab_switches}</p>
+      <p className="sub" style={{ textAlign: "left" }}>{a.student_code} · Score {a.score ?? "—"}/{a.total ?? "—"} · Tab switches {a.tab_switches} · Tamper flags {a.tamper}</p>
       {qs.map((q) => {
         const v = ans[q.id];
         const ok = q.type === "mcq" && v === q.correct;

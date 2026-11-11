@@ -3,7 +3,7 @@
 Next.js 15 + Neon Postgres + Vercel.
 
 ## 1) Neon
-Create a project at neon.tech → **Connect** → copy the connection string.
+Uses the existing TecnoID database. Everything lives in a separate schema `online_exam` (tables: exams, questions, results), so Prisma/TecnoID tables are untouched. Students log in with their `Student.studentCode`; grades are saved in `online_exam.results`.
 
 ## 2) Local
 ```bash
@@ -25,3 +25,9 @@ Reading section example:
   "prompt": "A fit person can bear fatigue for longer periods. Why?", "points": 2 }
 ```
 Questions that share a passage: repeat the same `passage` text on each.
+
+## Update notes
+- Run `npm run db:setup` again after updating (adds the `tamper` column; safe to repeat).
+- Login accepts `Student.studentCode` or `Student.qrCode` (works with a USB barcode scanner — it types the code and presses Enter).
+- Flow: enter/scan code → confirm name → timer starts. One attempt per student (`online_exam.results`, unique per exam + student).
+- Answers autosave to the server every few seconds; if a student closes the browser and time runs out, the saved answers are graded on next visit.
